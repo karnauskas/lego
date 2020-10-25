@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	//"github.com/ernesto-jimenez/httplogger"
 	"github.com/jamescun/doh"
 	"github.com/miekg/dns"
 )
@@ -264,20 +263,11 @@ func sendDNSQuery(m *dns.Msg, ns string) (in *dns.Msg, err error) {
 		q := m.Question[0]
 		if q.Qtype == dns.TypeTXT {
 			resolver := doh.Client{
-				// bug?!
-				//Addr: &url.URL{
-				//	Scheme: "https",
-				//	Host: "cloudflare-dns.com",
-				//	Path: "/dns-query",
-				//},
 				Addr: &url.URL{
 					Scheme: "https",
 					Host:   "dns.google.com",
 					Path:   "/resolve",
 				},
-				//HTTPClient: &http.Client{
-				//	Transport: httplogger.NewLoggedTransport(http.DefaultTransport, newLogger()),
-				//},
 			}
 
 			resp, _, tempErr := resolver.Do(&doh.Question{
