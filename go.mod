@@ -23,10 +23,12 @@ require (
 	github.com/gophercloud/gophercloud v0.7.0
 	github.com/gophercloud/utils v0.0.0-20200508015959-b0167b94122c
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
+	github.com/jamescun/doh v0.0.0-20180806162537-183f0ccfacf7
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.21.0
 	github.com/liquidweb/liquidweb-go v1.6.1
+	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/miekg/dns v1.1.31
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.1

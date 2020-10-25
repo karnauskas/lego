@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	//"github.com/ernesto-jimenez/httplogger"
+	"github.com/jamescun/doh"
 	"github.com/miekg/dns"
 )
 
@@ -252,9 +255,54 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 	return m
 }
 
-func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
+func sendDNSQuery(m *dns.Msg, ns string) (in *dns.Msg, err error) {
 	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
-	in, _, err := udp.Exchange(m, ns)
+	in, _, err = udp.Exchange(m, ns)
+
+	// network error? try DoH
+	if err != nil && err == err.(*net.OpError) {
+		q := m.Question[0]
+		if q.Qtype == dns.TypeTXT {
+			resolver := doh.Client{
+				// bug?!
+				//Addr: &url.URL{
+				//	Scheme: "https",
+				//	Host: "cloudflare-dns.com",
+				//	Path: "/dns-query",
+				//},
+				Addr: &url.URL{
+					Scheme: "https",
+					Host:   "dns.google.com",
+					Path:   "/resolve",
+				},
+				//HTTPClient: &http.Client{
+				//	Transport: httplogger.NewLoggedTransport(http.DefaultTransport, newLogger()),
+				//},
+			}
+
+			resp, _, tempErr := resolver.Do(&doh.Question{
+				Name: q.Name,
+				Type: doh.TXT,
+			})
+			err = tempErr
+
+			if len(resp.Answer) > 0 {
+				a0 := resp.Answer[0]
+
+				answ := new(dns.Msg)
+				answ.Answer = []dns.RR{
+					&dns.TXT{
+						Hdr: dns.RR_Header{
+							Ttl:    uint32(a0.TTL),
+							Rrtype: doh.TXT,
+						},
+						Txt: []string{strings.Trim(a0.Data, `"`)},
+					},
+				}
+				in = answ
+			}
+		}
+	}
 
 	if in != nil && in.Truncated {
 		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}

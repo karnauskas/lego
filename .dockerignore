@@ -6,3 +6,4 @@ lego.exe
 dist/
 builds/
 docs/
+vendor/
